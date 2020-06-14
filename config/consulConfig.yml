@@ -1,0 +1,12 @@
+# Sample Environment Details
+consul.details:
+  - name: local0
+    dc: dc1
+    url: http://localhost:8500
+    base.path: config0/
+    token: ""
+  - name: local1
+    dc: dc1
+    url: http://localhost:8500
+    base.path: config1/
+    token: ""
