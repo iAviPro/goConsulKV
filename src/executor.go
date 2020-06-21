@@ -47,15 +47,17 @@ func ExecuteGoConsulKV() {
 	restore.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
 	restore.StringVar(&sn, "s", "", "Define service name. Default is empty.")
 	restore.StringVar(&fp, "file", "", "Define absolute file path to recovery json file. Default is empty string, which tries to recover from ./backup/${consul-name}.json")
+	restore.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
 
 	switch os.Args[1] {
 	case "add":
 		{
 			add.Parse(os.Args[2:])
 			if props == "" {
-				fmt.Println("Missing critical arguments for 'add' command. Execution stopped Please use -help for more details.")
+				fmt.Println("Missing critical arguments for 'add' command. Execution stopped. Please use -help for more details.")
 				os.Exit(1)
-			} else if config == "" || cn == "" || token == "" || sn == "" {
+			}
+			if config == "" || cn == "" || token == "" || sn == "" {
 				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
 				AddKVToConsul(sn, cn, token, props, config, replace)
 			} else {
@@ -67,9 +69,10 @@ func ExecuteGoConsulKV() {
 		{
 			delete.Parse(os.Args[2:])
 			if sn == "" || props == "" {
-				fmt.Println("Missing critical arguments for 'add' command. Execution stopped Please use -help for more details.")
+				fmt.Println("Missing critical arguments for 'delete' command. Execution stopped. Please use -help for more details.")
 				os.Exit(1)
-			} else if config == "" || cn == "" || token == "" {
+			}
+			if config == "" || cn == "" || token == "" {
 				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
 				DeleteKVFromConsul(sn, cn, token, props, config)
 			} else {
@@ -83,6 +86,20 @@ func ExecuteGoConsulKV() {
 			if config == "" || cn == "" || token == "" || fp == "" {
 				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
 				BackupConsulKV(cn, token, config, fp)
+			}
+
+		}
+	case "restore":
+		{
+			restore.Parse(os.Args[2:])
+			if cn == "" {
+				fmt.Println("Missing critical arguments for 'recover' command. Execution stopped. Please use -help for more details.")
+				os.Exit(1)
+			}
+			if config == "" || sn == "" || token == "" || fp == "" {
+				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
+				RestoreConsulKV(cn, token, config, fp, sn)
+
 			}
 
 		}

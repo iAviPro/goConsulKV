@@ -9,6 +9,7 @@ package src
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/consul/api"
 )
@@ -240,4 +241,48 @@ func BackupConsulKV(cn, token, cp, fp string) {
 		}
 		fmt.Println("Note:- Values in consul are base64 encoded")
 	}
+}
+
+// RestoreConsulKV : To restore consul from backup file
+func RestoreConsulKV(cn, token, cp, fp, sn string) {
+	var file string
+	configMap := CreateConsulDetails(cp)
+	client, e := ConnectConsul(configMap[cn].BaseURL, configMap[cn].DataCentre, configMap[cn].Token)
+	if e != nil {
+		fmt.Println("Could not Connect to Consul Name: " + configMap[cn].ConsulName)
+		fmt.Println(e)
+	} else {
+		fmt.Printf("\n-- Connected to Consul Name: %s --\n", configMap[cn].ConsulName)
+	}
+	if fp == "" {
+		pwd, _ := os.Getwd()
+		// default backup path if file path is ""
+		file = pwd + DefaultBackupFilePath + "/" + configMap[cn].ConsulName + ".json"
+	} else if ValidateFilePath(fp) != nil {
+		file = fp
+		fmt.Println("Invalid absolute path to recovery json file. Given path: ", file)
+		os.Exit(1)
+	} else {
+		file = fp
+	}
+	fmt.Println("File path for recovery used (based on the parameters given) : ", file)
+	kvStruct := ReadJsonFileAndReturnStruct(file)
+	kvPairs := convertJsonStructToKvPairs(kvStruct)
+	for _, kv := range *kvPairs {
+		// for recovering only a particular service KVs
+		if sn != "" {
+			url := configMap[cn].BasePath + sn + "/"
+			if strings.Contains(kv.Key, url) {
+				// base path is empty as json already had the basepath within key
+				PutKV(client, &kv, "")
+			} else {
+				continue
+			}
+		} else {
+			// for recovery of all the consul KVs
+			// base path is empty as json already had the basepath within key
+			PutKV(client, &kv, "")
+		}
+	}
+	fmt.Println(" -- Consul Recovery Completed for name: ", configMap[cn].ConsulName)
 }

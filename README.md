@@ -10,7 +10,7 @@ If your development / testing environment uses single or multiple consuls & util
 1. Add / Update KV Pairs in one or multiple consul servers in single step.
 2. Delete KV Pairs in one or multiple consul servers in single step.
 3. Take backups of one or multiple consul servers kv-store in single step.
-4. Restore backup of one or multiple consul servers in single step. [Work In progress]
+4. Restore backup of one or multiple consul servers in single step.
 
 ### Get Started
 

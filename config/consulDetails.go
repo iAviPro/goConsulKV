@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -53,18 +52,6 @@ func ParseConfigFile(configFilePath string) (*AllConsuls, error) {
 	}
 
 	return env, nil
-}
-
-// ValidateConfigPath : Validates if the path provide is a file
-func ValidateConfigPath(path string) error {
-	s, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-	if s.IsDir() {
-		return fmt.Errorf("'%s' is a directory, not a normal file", path)
-	}
-	return nil
 }
 
 // GetConsulConfigMap : Get Map of AllConsuls

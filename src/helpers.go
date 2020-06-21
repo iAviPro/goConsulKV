@@ -96,7 +96,7 @@ func CreateConsulDetails(cfp string) map[string]config.ConsulDetail {
 	if cfp == "" {
 		parseFile = config.DefaultPathToEnvConfigFile
 	} else {
-		if er := config.ValidateConfigPath(cfp); er != nil {
+		if er := ValidateFilePath(cfp); er != nil {
 			parseFile = config.DefaultPathToEnvConfigFile
 			fmt.Printf("\nError in config file path: %s \n", cfp)
 			fmt.Println(er)
@@ -113,4 +113,35 @@ func CreateConsulDetails(cfp string) map[string]config.ConsulDetail {
 	}
 	confMap := config.GetConsulConfigMap(allConfigs)
 	return confMap
+}
+
+// ValidateFilePath : Validates if the path provide is a file
+func ValidateFilePath(path string) error {
+	s, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if s.IsDir() {
+		return fmt.Errorf("'%s' is a directory, not a normal file", path)
+	}
+	return nil
+}
+
+func ReadJsonFileAndReturnStruct(fp string) *[]KVDetails {
+	file, _ := ioutil.ReadFile(fp)
+	var data []KVDetails
+	_ = json.Unmarshal([]byte(file), &data)
+	return &data
+}
+
+func convertJsonStructToKvPairs(kvDetails *[]KVDetails) *[]api.KVPair {
+	var kvPairs []api.KVPair
+	for _, data := range *kvDetails {
+		var kv api.KVPair
+		kv.Key = data.Key
+		kv.Value = data.Value
+		kv.Flags = data.Flags
+		kvPairs = append(kvPairs, kv)
+	}
+	return &kvPairs
 }
