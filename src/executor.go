@@ -59,10 +59,8 @@ func ExecuteGoConsulKV() {
 			}
 			if config == "" || cn == "" || token == "" || sn == "" {
 				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
-				AddKVToConsul(sn, cn, token, props, config, replace)
-			} else {
-				AddKVToConsul(sn, cn, token, props, config, replace)
 			}
+			AddKVToConsul(sn, cn, token, props, config, replace)
 		}
 
 	case "delete":
@@ -74,10 +72,9 @@ func ExecuteGoConsulKV() {
 			}
 			if config == "" || cn == "" || token == "" {
 				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
-				DeleteKVFromConsul(sn, cn, token, props, config)
-			} else {
-				DeleteKVFromConsul(sn, cn, token, props, config)
 			}
+			DeleteKVFromConsul(sn, cn, token, props, config)
+
 		}
 
 	case "backup":
@@ -85,9 +82,8 @@ func ExecuteGoConsulKV() {
 			backup.Parse(os.Args[2:])
 			if config == "" || cn == "" || token == "" || fp == "" {
 				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
-				BackupConsulKV(cn, token, config, fp)
 			}
-
+			BackupConsulKV(cn, token, config, fp)
 		}
 	case "restore":
 		{
@@ -98,10 +94,8 @@ func ExecuteGoConsulKV() {
 			}
 			if config == "" || sn == "" || token == "" || fp == "" {
 				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
-				RestoreConsulKV(cn, token, config, fp, sn)
-
 			}
-
+			RestoreConsulKV(cn, token, config, fp, sn)
 		}
 	}
 }
