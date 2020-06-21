@@ -18,4 +18,5 @@ Pre-requisite: Go 1.14 or above.
 
 1. `git clone github.com/iAviPro/goConsulKV`
 2. `go build`
-3. `./goConsulKV <$command> <$arguments>`
+3. Update `./config/consulConfig.yml` or create your own yml config file.
+4. `./goConsulKV <$command> <$arguments>`

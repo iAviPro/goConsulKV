@@ -19,27 +19,34 @@ func ExecuteGoConsulKV() {
 	add := flag.NewFlagSet("add", flag.ExitOnError)
 	delete := flag.NewFlagSet("delete", flag.ExitOnError)
 	backup := flag.NewFlagSet("backup", flag.ExitOnError)
+	restore := flag.NewFlagSet("restore", flag.ExitOnError)
 
-	// add sub-command
-	add.StringVar(&sn, "s", "", "-s: Define service name. Default is empty.")
-	add.StringVar(&config, "config", "", "-config: Define consul config yml file. Default is ./config/consulConfig.yml")
-	add.StringVar(&token, "t", "", "-t: Define valid token. Default is \"\"")
-	add.StringVar(&cn, "n", "", "-n: Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
-	add.StringVar(&replace, "replace", "false", "-replace: [true | false] Replaces the Value if Key already exists. Default is false.")
-	add.StringVar(&props, "p", "", "-p: Define '|' separated properties. Default is empty string")
+	// add arguments
+	add.StringVar(&sn, "s", "", "Define service name. Default is empty.")
+	add.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
+	add.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	add.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
+	add.StringVar(&replace, "replace", "false", "['true' | 'false'] Replaces the Value if Key already exists. Default is false.")
+	add.StringVar(&props, "p", "", "Define '|' separated properties. Default is empty string")
 
-	//delete sub-command
-	delete.StringVar(&sn, "s", "", "-s: Define service name. Default is empty.")
-	delete.StringVar(&config, "config", "", "-config: Define consul config yml file. Default is ./config/consulConfig.yml")
-	delete.StringVar(&token, "t", "", "-t: Define valid token. Default is \"\"")
-	delete.StringVar(&cn, "n", "", "-n: Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
-	delete.StringVar(&props, "p", "", "-p: Define '|' separated properties. Default is empty string")
+	// delete arguments
+	delete.StringVar(&sn, "s", "", "Define service name. Default is empty.")
+	delete.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
+	delete.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	delete.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
+	delete.StringVar(&props, "p", "", "Define '|' separated properties. Default is empty string")
 
-	//backup subcommand
-	backup.StringVar(&config, "config", "", "-config: Define consul config yml file. Default is ./config/consulConfig.yml")
-	backup.StringVar(&token, "t", "", "-t: Define valid token. Default is \"\"")
-	backup.StringVar(&cn, "n", "", "-n: Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
-	backup.StringVar(&fp, "save", "", "-save: Define directory path (without trailing '/') to save the backup file, given consul name will the file name. Default is empty string, which save it ./backup/${consul-name}.json")
+	// backup arguments
+	backup.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
+	backup.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	backup.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
+	backup.StringVar(&fp, "save", "", "Define absolute directory path (without trailing '/') to save the backup file, given consul name will the file name. Default is empty string, which backs-up at ./backup/${consul-name}.json")
+
+	// restore arguments
+	restore.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
+	restore.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	restore.StringVar(&sn, "s", "", "Define service name. Default is empty.")
+	restore.StringVar(&fp, "file", "", "Define absolute file path to recovery json file. Default is empty string, which tries to recover from ./backup/${consul-name}.json")
 
 	switch os.Args[1] {
 	case "add":
