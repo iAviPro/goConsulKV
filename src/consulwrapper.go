@@ -78,7 +78,7 @@ func ListAllKV(client *api.Client, basePath string) (*api.KVPairs, error) {
 }
 
 // AddKVToConsul : Allows only to add KV-pairs in multi-consul setup, if the KV is already existing it will not update KV
-func AddKVToConsul(sn, cn, token, props, config, replace string) {
+func AddKVToConsul(sn, cn, props, config, replace string) {
 	configMap := CreateConsulDetails(config)
 	kvPairs := createKVPairs(props, sn)
 	if cn == "" {
@@ -146,7 +146,7 @@ func AddKVToConsul(sn, cn, token, props, config, replace string) {
 }
 
 // DeleteKVFromConsul : Deletes given prop keys from consul
-func DeleteKVFromConsul(sn, cn, token, props, config string) {
+func DeleteKVFromConsul(sn, cn, props, config string) {
 	configMap := CreateConsulDetails(config)
 	kvPairs := createKVPairs(props, sn)
 	if cn == "" {
@@ -190,7 +190,7 @@ func DeleteKVFromConsul(sn, cn, token, props, config string) {
 }
 
 // BackupConsulKV : Function to take json backups of consul and save to a backup file
-func BackupConsulKV(cn, token, cp, fp string) {
+func BackupConsulKV(cn, cp, fp string) {
 	configMap := CreateConsulDetails(cp)
 	var path string
 	if fp == "" {
@@ -244,7 +244,7 @@ func BackupConsulKV(cn, token, cp, fp string) {
 }
 
 // RestoreConsulKV : To restore consul from backup file
-func RestoreConsulKV(cn, token, cp, fp, sn string) {
+func RestoreConsulKV(cn, cp, fp, sn string) {
 	var file string
 	configMap := CreateConsulDetails(cp)
 	client, e := ConnectConsul(configMap[cn].BaseURL, configMap[cn].DataCentre, configMap[cn].Token)
