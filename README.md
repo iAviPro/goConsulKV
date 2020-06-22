@@ -46,8 +46,8 @@ Pre-requisite: Go 1.14 or above.
 
 ### Sample Commands for Different Use-Case Scenarios
 
-Update ./config/consulConfig.yml file with consul server details.
-   OR
+Update ./config/consulConfig.yml file with consul server details.  
+   OR.  
 Define your own config yml file and give absolute path to that file using `-config` argument in the command.  
 
 **Add Key-Values to multiple consuls (dev / staging / prod environment):**  
