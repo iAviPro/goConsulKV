@@ -2,7 +2,7 @@
 Console based go application for Consul key-Value store operations
 
 ### About:
-Consul is service discovery & health-checking system. It also provides a Key-Value store for services, to be used as service or environment properties. This console based application builds on that key/value store.
+Consul by HashiCorp is service discovery & health-checking system. It also provides a Key-Value store for services, to be used as service or environment properties. This console based application builds on that key/value store.
 If your development / testing environment uses single or multiple consuls & utilizes it's kv-store, then you can use this app to do operations on the key/value store.
 
 ### Get Started
@@ -79,5 +79,7 @@ Define your own config yml file and give absolute path to that file using `-conf
 
 *Note: The argument values are place holders in the above sample command*  
 
---------
 > Pro Tip: You can use the commands in Jenkins Job as well to create cron backups, restore, update or delete consul KVs.
+
+------
+Primary dependency: https://godoc.org/github.com/hashicorp/consul/api
