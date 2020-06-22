@@ -77,5 +77,7 @@ Define your own config yml file and give absolute path to that file using `-conf
 **Restore Key-Value Store of a single service in a Consuls :**  
 >```./goConsulKV backup -n consulName1 -file "/home/users/username/consul_backup/consulName1.json" -s serviceName1```  
 
+*Note: The argument values are place holders in the above sample command*  
+
 --------
 > Pro Tip: You can use the commands in Jenkins Job as well to create cron backups, restore, update or delete consul KVs.
