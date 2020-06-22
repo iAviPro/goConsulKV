@@ -51,30 +51,31 @@ Update ./config/consulConfig.yml file with consul server details.
 Define your own config yml file and give absolute path to that file using `-config` argument in the command.  
 
 **Add Key-Values to multiple consuls (dev / staging / prod environment):**  
-```./goConsulKV add -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
+>```./goConsulKV add -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
 **Add Key-Values & Update Value if Key exists for multiple consuls (dev / staging / prod environment):**  
-```./goConsulKV add -s serviceName1 -replace true -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
+>```./goConsulKV add -s serviceName1 -replace true -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
 **Add / Update Key-Values in single consuls:**  
-```./goConsulKV add -n consulName1 -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
+>```./goConsulKV add -n consulName1 -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
 **Delete Key-Values to multiple consuls (dev / staging / prod environment):**  
-```./goConsulKV delete -s serviceName1 -replace true -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
+>```./goConsulKV delete -s serviceName1 -replace true -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
 **Delete Key-Values in single consuls:**  
-```./goConsulKV delete -n consulName1 -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
+>```./goConsulKV delete -n consulName1 -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
 **Backup Key-Value Store of multiple Consuls:**  
-```./goConsulKV backup -save "/home/users/username/consul_backup"```  
+>```./goConsulKV backup -save "/home/users/username/consul_backup"```  
 
 **Backup Key-Value Store of single Consuls:**  
-```./goConsulKV backup -n consulName1 -save "/home/users/username/consul_backup"```  
+>```./goConsulKV backup -n consulName1 -save "/home/users/username/consul_backup"```  
 
 **Restore Key-Value Store of a Consuls for all KVs:**  
-```./goConsulKV backup -n consulName1 -file "/home/users/username/consul_backup/consulName1.json"```  
+>```./goConsulKV backup -n consulName1 -file "/home/users/username/consul_backup/consulName1.json"```  
 
 **Restore Key-Value Store of a single service in a Consuls :**  
-```./goConsulKV backup -n consulName1 -file "/home/users/username/consul_backup/consulName1.json" -s serviceName1```  
+>```./goConsulKV backup -n consulName1 -file "/home/users/username/consul_backup/consulName1.json" -s serviceName1```  
 
-> Tip: You can use the commands in Jenkins Job as well to create cron backups, restore, update or delete consul KVs.
+--------
+> Pro Tip: You can use the commands in Jenkins Job as well to create cron backups, restore, update or delete consul KVs.
