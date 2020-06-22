@@ -16,7 +16,7 @@ Pre-requisite: Go 1.14 or above.
 
 ### Commands and their params
 
-| **__Command__** | **__Parameters__** | **__Details__**                                              |
+| **__Command__** | **__Arguments__** | **__Details__**                                              |
 | :-------------: | ------------------ | :----------------------------------------------------------- |
 |       add       | -config            | Define consul config yml file. Default is `./config/consulConfig.yml` |
 |                 | -n                 | Define consul name as per config yml. Default is empty string, which updates all consuls in config yml |
@@ -48,7 +48,7 @@ Pre-requisite: Go 1.14 or above.
 
 Update ./config/consulConfig.yml file with consul server details.
    OR
-Define your own config yml file and give absolute path to that file using `-config` parameter in the command.
+Define your own config yml file and give absolute path to that file using `-config` argument in the command.
 
 **Add Key-Values to multiple consuls (dev / staging / prod environment):**
 ```./goConsulKV add -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```
