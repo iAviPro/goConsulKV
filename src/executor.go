@@ -24,7 +24,7 @@ func ExecuteGoConsulKV() {
 	// add arguments
 	add.StringVar(&sn, "s", "", "Define service name. Default is empty.")
 	add.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
-	add.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	add.StringVar(&token, "t", "", "Define valid token. Default is empty string")
 	add.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
 	add.StringVar(&replace, "replace", "false", "['true' | 'false'] Replaces the Value if Key already exists. Default is false.")
 	add.StringVar(&props, "p", "", "Define '|' separated properties. Default is empty string")
@@ -32,22 +32,22 @@ func ExecuteGoConsulKV() {
 	// delete arguments
 	delete.StringVar(&sn, "s", "", "Define service name. Default is empty.")
 	delete.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
-	delete.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	delete.StringVar(&token, "t", "", "Define valid token. Default is empty string")
 	delete.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
 	delete.StringVar(&props, "p", "", "Define '|' separated properties. Default is empty string")
 
 	// backup arguments
 	backup.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
-	backup.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	backup.StringVar(&token, "t", "", "Define valid token. Default is empty string")
 	backup.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
-	backup.StringVar(&fp, "save", "", "Define absolute directory path (without trailing '/') to save the backup file, given consul name will the file name. Default is empty string, which backs-up at ./backup/${consul-name}.json")
+	backup.StringVar(&fp, "save", "", "Define absolute directory path (without trailing '/') to save the backup file, given consul name will be the json file name. Default is empty string, which backs-up at ./backup/${consul-name}.json")
 
 	// restore arguments
 	restore.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
-	restore.StringVar(&token, "t", "", "Define valid token. Default is \"\"")
+	restore.StringVar(&token, "t", "", "Define valid token. Default is empty string")
 	restore.StringVar(&sn, "s", "", "Define service name. Default is empty.")
-	restore.StringVar(&fp, "file", "", "Define absolute file path to recovery json file. Default is empty string, which tries to recover from ./backup/${consul-name}.json")
-	restore.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string, which updates all consuls in config yml")
+	restore.StringVar(&fp, "file", "", "Define absolute file path to recovery json file. Default is empty string, which tries to restore from ./backup/${consul-name}.json")
+	restore.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string")
 
 	switch os.Args[1] {
 	case "add":
@@ -89,7 +89,7 @@ func ExecuteGoConsulKV() {
 		{
 			restore.Parse(os.Args[2:])
 			if cn == "" {
-				fmt.Println("Missing critical arguments for 'recover' command. Execution stopped. Please use -help for more details.")
+				fmt.Println("Missing critical arguments for 'restore' command. Execution stopped. Please use -help for more details.")
 				os.Exit(1)
 			}
 			if config == "" || sn == "" || token == "" || fp == "" {
