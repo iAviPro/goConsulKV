@@ -54,14 +54,14 @@ func createKVPairs(props, sName string) []api.KVPair {
 	return allKVPairs
 }
 
-// ProcessKVPairs : Convert KVPairs to json
+// processKVPairs : Convert KVPairs to json
 func processKVPairs(kvPairs *api.KVPairs, cn, fp string) []byte {
 	var jsonbackup []*KVDetails
 	for _, kv := range *kvPairs {
 		// skip folder creation in consul as its autocreated.
 		if kv.Key[len(kv.Key)-1:] == "/" {
 			continue
-		} else if string(kv.Value) == "" || kv.Value == nil {
+		} else if kv.Value == nil {
 			continue
 		} else {
 			kvDetails := KVDetails{
@@ -80,6 +80,7 @@ func processKVPairs(kvPairs *api.KVPairs, cn, fp string) []byte {
 	return b
 }
 
+// createBackupFileAndWriteData write file with backup data
 func createBackupFileAndWriteData(fp, cn string, data []byte) error {
 	filepath := fp + "/" + cn + ".json"
 	os.MkdirAll(fp, os.ModePerm)
@@ -127,14 +128,14 @@ func ValidateFilePath(path string) error {
 	return nil
 }
 
-func ReadJsonFileAndReturnStruct(fp string) *[]KVDetails {
+func readJSONFileAndReturnStruct(fp string) *[]KVDetails {
 	file, _ := ioutil.ReadFile(fp)
 	var data []KVDetails
 	_ = json.Unmarshal([]byte(file), &data)
 	return &data
 }
 
-func convertJsonStructToKvPairs(kvDetails *[]KVDetails) *[]api.KVPair {
+func convertJSONStructToKvPairs(kvDetails *[]KVDetails) *[]api.KVPair {
 	var kvPairs []api.KVPair
 	for _, data := range *kvDetails {
 		var kv api.KVPair
@@ -144,4 +145,48 @@ func convertJsonStructToKvPairs(kvDetails *[]KVDetails) *[]api.KVPair {
 		kvPairs = append(kvPairs, kv)
 	}
 	return &kvPairs
+}
+
+// converts *api.KVPairs to map[key]value to convert consul KV store list to map.
+func convertKVPairsToMap(sourceKvPairs *api.KVPairs) map[string][]byte {
+	var sourceKvMap = make(map[string][]byte)
+
+	for _, kv := range *sourceKvPairs {
+		// remove folders or keys with nil Kv Values
+		if kv.Key[len(kv.Key)-1:] == "/" {
+			continue
+		} else if kv.Value == nil {
+			continue
+		} else {
+			sourceKvMap[kv.Key] = kv.Value
+		}
+	}
+	return sourceKvMap
+}
+
+// find keys of source that do not exists in target and return those kvPairs
+func findUncommonKVPairs(sourceKvPairs, targetKvPairs *api.KVPairs) map[string][]byte {
+	targetKvMap := convertKVPairsToMap(targetKvPairs)
+	var res = make(map[string][]byte)
+
+	for _, sourceKv := range *sourceKvPairs {
+		if sourceKv.Key[len(sourceKv.Key)-1:] == "/" {
+			continue
+		} else if sourceKv.Value == nil {
+			continue
+		} else {
+			// if value already exists in the targetKVStore then does not update
+			if _, ok := targetKvMap[sourceKv.Key]; !ok {
+				res[sourceKv.Key] = sourceKv.Value
+			}
+		}
+	}
+	return res
+}
+
+func isConfigNameValid(name string, consulData map[string]config.ConsulDetail) bool {
+	if _, ok := consulData[name]; ok {
+		return true
+	}
+	return false
 }

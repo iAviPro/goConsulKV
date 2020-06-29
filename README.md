@@ -34,6 +34,11 @@ Pre-requisite: Go 1.14 or above.
 |                 | -file              | Define absolute file path to recovery json file. Default is empty string, which tries to recover from `./backup/${consul-name}.json` |
 |                 | -n (_Required_)    | Define consul name as per config yml. Default is empty string. |
 |                 | -s                 | Define service name. Default is empty string.                |
+|     sync        | -config            | Define consul config yml file. Default is `./config/consulConfig.yml` |
+|                 | -replace           | ['true' / 'false'] Replaces the Value if Key(s) already exists. Default is false. |
+|                 | -s                 | Define service name. Default is empty string.                |
+|                 | -source (_Required_)    | Define source consul name as per config yml. Default is empty.    |
+|                 | -target (_Required_)    | Define target consul name as per config yml. Default is empty.                |
 
 `./goConsulKV <$command> -help` for further details
 
@@ -75,8 +80,20 @@ Define your own config yml file and give absolute path to that file using `-conf
 **Restore Key-Value Store of a Consuls for all KVs:**  
 >```./goConsulKV restore -n consulName1 -file "/home/users/username/consul_backup/consulName1.json"```  
 
-**Restore Key-Value Store of a single service in a Consuls :**  
+**Restore Key-Value Store of a single service in a Consuls:**  
 >```./goConsulKV restore -n consulName1 -file "/home/users/username/consul_backup/consulName1.json" -s serviceName1```  
+
+**Sync all KVs of Source Consul KV-store with Target Consul KV-store without replacing existing Key-Values in target:**
+>```./goConsulKV sync -source consulName1 -target consulName2```
+
+**Sync all KVs of Source Consul KV-store with Target Consul KV-store and replacing existing Key-Values in target:**
+>```./goConsulKV sync -source consulName1 -target consulName2 -replace true```
+
+**Sync KVs of a given service from Source Consul KV-store to Target Consul KV-store for same service without replace:**
+>```./goConsulKV sync -source consulName1 -target consulName2 -s serviceName1```
+
+**Sync KVs of a given service from Source Consul KV-store to Target Consul KV-store for same service with replace:**
+>```./goConsulKV sync -source consulName1 -target consulName2 -s serviceName1 -replace true```
 
 *Note: The argument values are place holders in the above sample command*  
 

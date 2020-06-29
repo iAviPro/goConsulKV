@@ -266,8 +266,8 @@ func RestoreConsulKV(cn, cp, fp, sn string) {
 		file = fp
 	}
 	fmt.Println("File path for recovery used (based on the parameters given) : ", file)
-	kvStruct := ReadJsonFileAndReturnStruct(file)
-	kvPairs := convertJsonStructToKvPairs(kvStruct)
+	kvStruct := readJSONFileAndReturnStruct(file)
+	kvPairs := convertJSONStructToKvPairs(kvStruct)
 	for _, kv := range *kvPairs {
 		// for recovering only a particular service KVs
 		if sn != "" {
@@ -285,4 +285,72 @@ func RestoreConsulKV(cn, cp, fp, sn string) {
 		}
 	}
 	fmt.Println(" -- Consul Recovery Completed for name: ", configMap[cn].ConsulName)
+}
+
+// SyncConsulKVStore :  Sync Kv Store of source consul name with target consul name
+func SyncConsulKVStore(source, target, sn, config, replace string) {
+	configMap := CreateConsulDetails(config)
+	if !isConfigNameValid(source, configMap) || !isConfigNameValid(target, configMap) {
+		fmt.Println("Invalid Consul Name mentioned, consul name should be same as the config yml file")
+		os.Exit(1)
+	}
+
+	// source client
+	clientS, er := ConnectConsul(configMap[source].BaseURL, configMap[source].DataCentre, configMap[source].Token)
+	if er != nil {
+		fmt.Println("Could not Connect to Consul Name: " + configMap[source].ConsulName)
+		fmt.Println(er)
+	} else {
+		fmt.Printf("\n-- Connected to Consul Name: %s --\n", configMap[source].ConsulName)
+	}
+
+	sourceKVList, _ := ListAllKV(clientS, configMap[source].BasePath)
+
+	// target client
+	clientT, e := ConnectConsul(configMap[target].BaseURL, configMap[target].DataCentre, configMap[target].Token)
+	if e != nil {
+		fmt.Println("Could not Connect to Consul Name: " + configMap[target].ConsulName)
+		fmt.Println(e)
+	} else {
+		fmt.Printf("\n-- Connected to Consul Name: %s --\n", configMap[target].ConsulName)
+	}
+	targetKVList, _ := ListAllKV(clientT, configMap[target].BasePath)
+	var kvPairsToSync = make(map[string][]byte)
+	// if replace is false then only Keys that are in source but not in target KV store will be added
+	if replace == "false" {
+		kvPairsToSync = findUncommonKVPairs(sourceKVList, targetKVList)
+	} else {
+		kvPairsToSync = convertKVPairsToMap(sourceKVList)
+	}
+	if sn == "" {
+		for key, val := range kvPairsToSync {
+			kv := api.KVPair{
+				Key:   key,
+				Value: val,
+			}
+			_, er := PutKV(clientT, &kv, "")
+			if er != nil {
+				fmt.Println("<> -- Could not Add Key to Consul Name: " + configMap[target].ConsulName + ". Following KV was not added =>")
+				fmt.Printf("\n%s = %s", kv.Key, kv.Value)
+				fmt.Println(er)
+			}
+		}
+	} else {
+		targetPath := configMap[target].BasePath + sn + "/"
+		for key, val := range kvPairsToSync {
+			if strings.Contains(key, targetPath) {
+				kv := api.KVPair{
+					Key:   key,
+					Value: val,
+				}
+				_, er := PutKV(clientT, &kv, "")
+				if er != nil {
+					fmt.Println("<> -- Could not Add Key to Consul Name: " + configMap[target].ConsulName + ". Following KV was not added =>")
+					fmt.Printf("\n%s = %s", kv.Key, kv.Value)
+					fmt.Println(er)
+				}
+			}
+		}
+	}
+	fmt.Printf("\n-- Consul KV Store Sync of Source Consul: %s and Target Consul: %s is complete --\n", configMap[source].ConsulName, configMap[target].ConsulName)
 }

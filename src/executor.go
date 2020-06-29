@@ -14,12 +14,13 @@ import (
 
 // ExecuteGoConsulKV : Driver code for goConsulKV
 func ExecuteGoConsulKV() {
-	var sn, cn, props, config, replace, fp string
+	var sn, cn, props, config, replace, fp, source, target string
 	fmt.Println("::==> Welcome to github.com/iAviPro/goConsulKV <==::")
 	add := flag.NewFlagSet("add", flag.ExitOnError)
 	delete := flag.NewFlagSet("delete", flag.ExitOnError)
 	backup := flag.NewFlagSet("backup", flag.ExitOnError)
 	restore := flag.NewFlagSet("restore", flag.ExitOnError)
+	sync := flag.NewFlagSet("sync", flag.ExitOnError)
 
 	// add arguments
 	add.StringVar(&sn, "s", "", "Define service name. Default is empty.")
@@ -45,6 +46,13 @@ func ExecuteGoConsulKV() {
 	restore.StringVar(&fp, "file", "", "Define absolute file path to recovery json file. Default is empty string, which tries to restore from ./backup/${consul-name}.json")
 	restore.StringVar(&cn, "n", "", "Define consul name as per config yml. Default is empty string")
 
+	// sync arguments
+	sync.StringVar(&config, "config", "", "Define consul config yml file. Default is ./config/consulConfig.yml")
+	sync.StringVar(&sn, "s", "", "Define service name. Default is empty.")
+	sync.StringVar(&source, "source", "", "Define source consul name as per config yml. Default is empty.")
+	sync.StringVar(&target, "target", "", "Define target consul name as per config yml. Default is empty.")
+	sync.StringVar(&replace, "replace", "false", "['true' | 'false'] Replaces the Value if Key(s) already exists. Default is false.")
+
 	switch os.Args[1] {
 	case "add":
 		{
@@ -54,7 +62,7 @@ func ExecuteGoConsulKV() {
 				os.Exit(1)
 			}
 			if config == "" || cn == "" {
-				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
+				fmt.Println("Missing arguments. Default values for those arguments will be used. Please use -help for more details")
 			}
 			AddKVToConsul(sn, cn, props, config, replace)
 		}
@@ -67,7 +75,7 @@ func ExecuteGoConsulKV() {
 				os.Exit(1)
 			}
 			if config == "" || cn == "" {
-				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
+				fmt.Println("Missing arguments. Default values for those arguments will be used. Please use -help for more details")
 			}
 			DeleteKVFromConsul(sn, cn, props, config)
 
@@ -77,7 +85,7 @@ func ExecuteGoConsulKV() {
 		{
 			backup.Parse(os.Args[2:])
 			if config == "" || cn == "" || fp == "" {
-				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
+				fmt.Println("Missing arguments. Default values for those arguments will be used. Please use -help for more details")
 			}
 			BackupConsulKV(cn, config, fp)
 		}
@@ -89,9 +97,21 @@ func ExecuteGoConsulKV() {
 				os.Exit(1)
 			}
 			if config == "" || sn == "" || fp == "" {
-				fmt.Println("Missing arguments. Default values for those arguments will be used will be used. Please use -help for more details")
+				fmt.Println("Missing arguments. Default values for those arguments will be used. Please use -help for more details")
 			}
 			RestoreConsulKV(cn, config, fp, sn)
+		}
+	case "sync":
+		{
+			sync.Parse(os.Args[2:])
+			if source == "" || target == "" {
+				fmt.Println("Missing critical arguments for 'sync' command. Execution stopped. Please use -help for more details.")
+				os.Exit(1)
+			}
+			if config == "" || sn == "" {
+				fmt.Println("Missing arguments. Default values for those arguments will be used. Please use -help for more details")
+			}
+			SyncConsulKVStore(source, target, sn, config, replace)
 		}
 	}
 }
