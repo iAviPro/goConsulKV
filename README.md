@@ -41,8 +41,9 @@ Pre-requisite: Go 1.14 or above.
 
 1. Add / Update KV Pairs in one or multiple consul servers in single step.
 2. Delete KV Pairs in one or multiple consul servers in single step.
-3. Take backups of one or multiple consul servers kv-store in single step.
+3. Backup of one or multiple consul servers kv-store in single step.
 4. Restore backup of one or multiple consul servers in single step.
+5. Sync two consul KV store entirely or all KVs of a given service path.
 
 ### Sample Commands for Different Use-Case Scenarios
 
