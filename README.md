@@ -10,8 +10,8 @@ If your development / testing environment uses single or multiple consuls & util
 Pre-requisite: Go 1.14 or above.
 
 1. `git clone github.com/iAviPro/goConsulKV`
-2. `go build`
-3. Update `./config/consulConfig.yml` or create your own yml config file.
+2. Update `./config/consulConfig.yml` or create your own yml config file.
+3. `go build`
 4. `./goConsulKV <$command> <$arguments>`
 
 ### Commands, their Arguments with details
