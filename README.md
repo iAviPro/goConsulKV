@@ -62,25 +62,25 @@ Define your own config yml file and give absolute path to that file using `-conf
 **Add Key-Values & Update Value if Key exists for multiple consuls (dev / staging / prod environment):**  
 >```./goConsulKV add -s serviceName1 -replace true -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
-**Add / Update Key-Values in single consuls:**  
+**Add / Update Key-Values in single consul:**  
 >```./goConsulKV add -n consulName1 -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
 **Delete Key-Values to multiple consuls (dev / staging / prod environment):**  
 >```./goConsulKV delete -s serviceName1 -replace true -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
-**Delete Key-Values in single consuls:**  
+**Delete Key-Values in single consul:**  
 >```./goConsulKV delete -n consulName1 -s serviceName1 -p "propKey1=propValue1 | propKey2=propValue2 | propKey3='propValue3'"```  
 
 **Backup Key-Value Store of multiple Consuls:**  
 >```./goConsulKV backup -save "/home/users/username/consul_backup"```  
 
-**Backup Key-Value Store of single Consuls:**  
+**Backup Key-Value Store of single Consul:**  
 >```./goConsulKV backup -n consulName1 -save "/home/users/username/consul_backup"```  
 
-**Restore Key-Value Store of a Consuls for all KVs:**  
+**Restore Key-Value Store of a Consul for all KVs:**  
 >```./goConsulKV restore -n consulName1 -file "/home/users/username/consul_backup/consulName1.json"```  
 
-**Restore Key-Value Store of a single service in a Consuls:**  
+**Restore Key-Value Store of a single service in a Consul:**  
 >```./goConsulKV restore -n consulName1 -file "/home/users/username/consul_backup/consulName1.json" -s serviceName1```  
 
 **Sync all KVs of Source Consul KV-store with Target Consul KV-store without replacing existing Key-Values in target:**
