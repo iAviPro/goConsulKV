@@ -54,8 +54,8 @@ func createKVPairs(props, sName string) []api.KVPair {
 	return allKVPairs
 }
 
-// processKVPairs : Convert KVPairs to json
-func processKVPairs(kvPairs *api.KVPairs, cn, fp string) []byte {
+// kvPairsToJSON : Convert KVPairs to json
+func kvPairsToJSON(kvPairs *api.KVPairs, cn, fp string) []byte {
 	var jsonbackup []*KVDetails
 	for _, kv := range *kvPairs {
 		// skip folder creation in consul as its autocreated.
@@ -147,26 +147,30 @@ func convertJSONStructToKvPairs(kvDetails *[]KVDetails) *[]api.KVPair {
 	return &kvPairs
 }
 
-// converts *api.KVPairs to map[key]value to convert consul KV store list to map.
-func convertKVPairsToMap(sourceKvPairs *api.KVPairs) map[string][]byte {
-	var sourceKvMap = make(map[string][]byte)
-
-	for _, kv := range *sourceKvPairs {
+// convertServiceKVPairsToMap : key = only service path (removing the base path) and value is the KV value.
+func convertServiceKVPairsToMap(kvPairs *api.KVPairs, bp string) map[string][]byte {
+	var kvMap = make(map[string][]byte)
+	for _, kv := range *kvPairs {
 		// remove folders or keys with nil Kv Values
 		if kv.Key[len(kv.Key)-1:] == "/" {
 			continue
 		} else if kv.Value == nil {
 			continue
 		} else {
-			sourceKvMap[kv.Key] = kv.Value
+			/*
+				removing base path removes the conditional requirement of mapping the same base path
+				in every consul. Each consul can have separate base path.
+			*/
+			k := removeBasePath(kv.Key, bp)
+			kvMap[k] = kv.Value
 		}
 	}
-	return sourceKvMap
+	return kvMap
 }
 
-// find keys of source that do not exists in target and return those kvPairs
-func findUncommonKVPairs(sourceKvPairs, targetKvPairs *api.KVPairs) map[string][]byte {
-	targetKvMap := convertKVPairsToMap(targetKvPairs)
+// removeExistingKVPairs : find keys of source that do not exists in target and return those kvPairs
+func removeExistingKVPairs(sourceKvPairs, targetKvPairs *api.KVPairs, sbf, tbf string) map[string][]byte {
+	targetKvMap := convertServiceKVPairsToMap(targetKvPairs, tbf)
 	var res = make(map[string][]byte)
 
 	for _, sourceKv := range *sourceKvPairs {
@@ -176,8 +180,9 @@ func findUncommonKVPairs(sourceKvPairs, targetKvPairs *api.KVPairs) map[string][
 			continue
 		} else {
 			// if value already exists in the targetKVStore then does not update
-			if _, ok := targetKvMap[sourceKv.Key]; !ok {
-				res[sourceKv.Key] = sourceKv.Value
+			k := removeBasePath(sourceKv.Key, sbf)
+			if _, ok := targetKvMap[k]; !ok {
+				res[k] = sourceKv.Value
 			}
 		}
 	}
@@ -189,4 +194,9 @@ func isConfigNameValid(name string, consulData map[string]config.ConsulDetail) b
 		return true
 	}
 	return false
+}
+
+func removeBasePath(key, bp string) string {
+	k := strings.Replace(key, bp, "", 1)
+	return k
 }

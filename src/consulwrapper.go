@@ -29,7 +29,7 @@ func ConnectConsul(address, datacentre, token string) (*api.Client, error) {
 }
 
 // PutKV : Put a single key and value in consul key-value store(WriteOptions set to nil)
-func PutKV(client *api.Client, kvPair *api.KVPair, basePath string) (bool, error) {
+func putKV(client *api.Client, kvPair *api.KVPair, basePath string) (bool, error) {
 	kv := client.KV()
 	kvPair.Key = basePath + kvPair.Key
 	_, e := kv.Put(kvPair, nil)
@@ -41,7 +41,7 @@ func PutKV(client *api.Client, kvPair *api.KVPair, basePath string) (bool, error
 }
 
 // GetKV to get key values using client
-func GetKV(client *api.Client, key, basePath string) (*api.KVPair, error) {
+func getKV(client *api.Client, key, basePath string) (*api.KVPair, error) {
 	kv := client.KV()
 	pair, _, err := kv.Get(basePath+key, nil)
 	if err != nil {
@@ -51,7 +51,7 @@ func GetKV(client *api.Client, key, basePath string) (*api.KVPair, error) {
 }
 
 // DeleteKV : deletes a single key (WriteOptions set to nil)
-func DeleteKV(client *api.Client, key, basePath string) (bool, error) {
+func deleteKV(client *api.Client, key, basePath string) (bool, error) {
 	kv := client.KV()
 	key = basePath + key
 	_, err := kv.Delete(key, nil)
@@ -63,7 +63,7 @@ func DeleteKV(client *api.Client, key, basePath string) (bool, error) {
 }
 
 // ListAllKV : Returns the list of All the KV pairs of a given consul
-func ListAllKV(client *api.Client, basePath string) (*api.KVPairs, error) {
+func listAllKV(client *api.Client, basePath string) (*api.KVPairs, error) {
 	kv := client.KV()
 	kvPairs, _, err := kv.List(basePath, nil)
 	if err != nil {
@@ -94,9 +94,9 @@ func AddKVToConsul(sn, cn, props, config, replace string) {
 			for _, kv := range kvPairs {
 				if replace == "false" {
 					// check if the key exists
-					if pair, _ := GetKV(client, kv.Key, conf.BasePath); pair == nil {
+					if pair, _ := getKV(client, kv.Key, conf.BasePath); pair == nil {
 						// put the key if it does not exist
-						_, er := PutKV(client, &kv, conf.BasePath)
+						_, er := putKV(client, &kv, conf.BasePath)
 						if er != nil {
 							fmt.Println("<> -- Could not Update to Consul Name: " + name + "Following KV =>")
 							fmt.Printf("\n%s = %s", kv.Key, kv.Value)
@@ -107,7 +107,7 @@ func AddKVToConsul(sn, cn, props, config, replace string) {
 						addfail[kv.Key] = kv.Value
 					}
 				} else {
-					_, er := PutKV(client, &kv, conf.BasePath)
+					_, er := putKV(client, &kv, conf.BasePath)
 					if er != nil {
 						fmt.Println("<> -- Could not Add Key to Consul Name: " + name + ". Following KV was not added =>")
 						fmt.Printf("\n%s = %s", kv.Key, kv.Value)
@@ -134,7 +134,7 @@ func AddKVToConsul(sn, cn, props, config, replace string) {
 			fmt.Printf("\n-- Connected to Consul Name: %s --\n", conf.ConsulName)
 		}
 		for _, kv := range kvPairs {
-			_, err := PutKV(client, &kv, conf.BasePath)
+			_, err := putKV(client, &kv, conf.BasePath)
 			if err != nil {
 				fmt.Println("<> -- Could not Update to Consul Name: " + cn + "Following KV =>")
 				fmt.Printf("\n%s = %s", kv.Key, kv.Value)
@@ -159,7 +159,7 @@ func DeleteKVFromConsul(sn, cn, props, config string) {
 				fmt.Printf("\n-- Connected to Consul Name: %s --\n", name)
 			}
 			for _, kv := range kvPairs {
-				_, er := DeleteKV(client, kv.Key, conf.BasePath)
+				_, er := deleteKV(client, kv.Key, conf.BasePath)
 				if er != nil {
 					fmt.Println("<> -- Could not Delete Key from Consul Name: " + name + ". Following KV was not deleted =>")
 					fmt.Printf("\n%s", conf.BasePath+kv.Key)
@@ -178,7 +178,7 @@ func DeleteKVFromConsul(sn, cn, props, config string) {
 			fmt.Printf("\n-- Connected to Consul Name: %s --\n", conf.ConsulName)
 		}
 		for _, kv := range kvPairs {
-			_, err := DeleteKV(client, kv.Key, conf.BasePath)
+			_, err := deleteKV(client, kv.Key, conf.BasePath)
 			if err != nil {
 				fmt.Println("<> -- Could not Delete from Consul Name: " + cn + "Following Key(s) =>")
 				fmt.Printf("\n%s", conf.BasePath+kv.Key)
@@ -208,12 +208,12 @@ func BackupConsulKV(cn, cp, fp string) {
 			} else {
 				fmt.Printf("\n-- Connected to Consul Name: %s --\n", name)
 			}
-			kvPairs, er := ListAllKV(client, conf.BasePath)
+			kvPairs, er := listAllKV(client, conf.BasePath)
 			if er != nil {
 				fmt.Println("<> -- Could not Backup from Consul Name: " + name)
 				fmt.Println(er)
 			}
-			data := processKVPairs(kvPairs, conf.ConsulName, path)
+			data := kvPairsToJSON(kvPairs, conf.ConsulName, path)
 			err := createBackupFileAndWriteData(path, conf.ConsulName, data)
 			if err != nil {
 				fmt.Println(err)
@@ -229,12 +229,12 @@ func BackupConsulKV(cn, cp, fp string) {
 		} else {
 			fmt.Printf("\n-- Connected to Consul Name: %s --\n", conf.ConsulName)
 		}
-		kvPairs, er := ListAllKV(client, conf.BasePath)
+		kvPairs, er := listAllKV(client, conf.BasePath)
 		if er != nil {
 			fmt.Println("<> -- Could not Backup from Consul Name: " + conf.ConsulName)
 			fmt.Println(er)
 		}
-		data := processKVPairs(kvPairs, conf.ConsulName, path)
+		data := kvPairsToJSON(kvPairs, conf.ConsulName, path)
 		err := createBackupFileAndWriteData(path, conf.ConsulName, data)
 		if err != nil {
 			fmt.Println(err)
@@ -274,14 +274,14 @@ func RestoreConsulKV(cn, cp, fp, sn string) {
 			url := configMap[cn].BasePath + sn + "/"
 			if strings.Contains(kv.Key, url) {
 				// base path is empty as json already had the basepath within key
-				PutKV(client, &kv, "")
+				putKV(client, &kv, "")
 			} else {
 				continue
 			}
 		} else {
 			// for recovery of all the consul KVs
 			// base path is empty as json already had the basepath within key
-			PutKV(client, &kv, "")
+			putKV(client, &kv, "")
 		}
 	}
 	fmt.Println(" -- Consul Recovery Completed for name: ", configMap[cn].ConsulName)
@@ -304,7 +304,7 @@ func SyncConsulKVStore(source, target, sn, config, replace string) {
 		fmt.Printf("\n-- Connected to Consul Name: %s --\n", configMap[source].ConsulName)
 	}
 
-	sourceKVList, _ := ListAllKV(clientS, configMap[source].BasePath)
+	sourceKVList, _ := listAllKV(clientS, configMap[source].BasePath)
 
 	// target client
 	clientT, e := ConnectConsul(configMap[target].BaseURL, configMap[target].DataCentre, configMap[target].Token)
@@ -314,13 +314,13 @@ func SyncConsulKVStore(source, target, sn, config, replace string) {
 	} else {
 		fmt.Printf("\n-- Connected to Consul Name: %s --\n", configMap[target].ConsulName)
 	}
-	targetKVList, _ := ListAllKV(clientT, configMap[target].BasePath)
+	targetKVList, _ := listAllKV(clientT, configMap[target].BasePath)
 	var kvPairsToSync = make(map[string][]byte)
 	// if replace is false then only Keys that are in source but not in target KV store will be added
 	if replace == "false" {
-		kvPairsToSync = findUncommonKVPairs(sourceKVList, targetKVList)
+		kvPairsToSync = removeExistingKVPairs(sourceKVList, targetKVList, configMap[source].BasePath, configMap[target].BasePath)
 	} else {
-		kvPairsToSync = convertKVPairsToMap(sourceKVList)
+		kvPairsToSync = convertServiceKVPairsToMap(sourceKVList, configMap[source].BasePath)
 	}
 	if sn == "" {
 		for key, val := range kvPairsToSync {
@@ -328,7 +328,7 @@ func SyncConsulKVStore(source, target, sn, config, replace string) {
 				Key:   key,
 				Value: val,
 			}
-			_, er := PutKV(clientT, &kv, "")
+			_, er := putKV(clientT, &kv, "")
 			if er != nil {
 				fmt.Println("<> -- Could not Add Key to Consul Name: " + configMap[target].ConsulName + ". Following KV was not added =>")
 				fmt.Printf("\n%s = %s", kv.Key, kv.Value)
@@ -343,7 +343,7 @@ func SyncConsulKVStore(source, target, sn, config, replace string) {
 					Key:   key,
 					Value: val,
 				}
-				_, er := PutKV(clientT, &kv, "")
+				_, er := putKV(clientT, &kv, "")
 				if er != nil {
 					fmt.Println("<> -- Could not Add Key to Consul Name: " + configMap[target].ConsulName + ". Following KV was not added =>")
 					fmt.Printf("\n%s = %s", kv.Key, kv.Value)
