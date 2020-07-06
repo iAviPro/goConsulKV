@@ -200,3 +200,15 @@ func removeBasePath(key, bp string) string {
 	k := strings.Replace(key, bp, "", 1)
 	return k
 }
+
+func errConsulConnection(name string, er error, exit bool) {
+	if er != nil {
+		fmt.Println(" <> -- Could Not Connect To Consul Server: ", name, " -- <>")
+		fmt.Println(er)
+		if exit {
+			os.Exit(1)
+		}
+	} else {
+		fmt.Printf("\n -- Successfully Connected To Consul Server: %s -- \n", name)
+	}
+}

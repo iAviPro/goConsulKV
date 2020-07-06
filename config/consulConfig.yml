@@ -1,4 +1,10 @@
 # Sample Environment Details
+# name - consul identifier
+# dc - data centre
+# url - base url of the consul server setup
+# base.path - if consul KV-store has a folder structure with base folder. It should end with '/' or be empty string otherwise
+# token - Valid ACL token with write access. If ACL is not implemented then can be empty string
+
 consul.details:
   - name: local0
     dc: dc1
