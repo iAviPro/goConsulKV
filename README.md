@@ -1,3 +1,6 @@
+[![CircleCI](https://circleci.com/gh/iAviPro/goConsulKV/tree/master.svg?style=shield&circle-token=a0b171036fba85469fbfa175a73ed0e7223357ab](https://app.circleci.com/pipelines/github/iAviPro)
+
+
 # goConsulKV
 Console based go application for Consul key-Value store operations
 
