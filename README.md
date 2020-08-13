@@ -1,8 +1,8 @@
-[![CircleCI](https://circleci.com/gh/iAviPro/goConsulKV/tree/master.svg?style=shield&circle-token=a0b171036fba85469fbfa175a73ed0e7223357ab](https://app.circleci.com/pipelines/github/iAviPro)
-
-
 # goConsulKV
-Console based go application for Consul key-Value store operations
+#### Console based go application for Consul key-Value store operations
+----------
+
+[![CircleCI](https://circleci.com/gh/iAviPro/goConsulKV/tree/master.svg?style=shield&circle-token=a0b171036fba85469fbfa175a73ed0e7223357ab)](https://app.circleci.com/pipelines/github/iAviPro)
 
 ### About:
 Consul by HashiCorp is service discovery & health-checking system. It also provides a Key-Value store for services, to be used as service or environment properties. This console based application builds on that key/value store.
