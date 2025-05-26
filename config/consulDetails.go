@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt" // Added fmt import
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -50,13 +51,19 @@ func ParseConfigFile(configFilePath string) (*AllConsuls, error) {
 	if err := yd.Decode(&env); err != nil {
 		return nil, err
 	}
+	if env == nil || len(env.ConsulConfigs) == 0 {
+		return nil, fmt.Errorf("no consul configurations found or failed to parse from file: %s", filePath)
+	}
 
 	return env, nil
 }
 
 // GetConsulConfigMap : Get Map of AllConsuls
 func GetConsulConfigMap(consuls *AllConsuls) map[string]ConsulDetail {
-	var consulsMap = make(map[string]ConsulDetail)
+	consulsMap := make(map[string]ConsulDetail)
+	if consuls == nil || consuls.ConsulConfigs == nil {
+		return consulsMap // Return empty map if input is nil or contains no configs
+	}
 	for _, c := range consuls.ConsulConfigs {
 		consulsMap[c.ConsulName] = c
 	}

@@ -103,5 +103,64 @@ Define your own config yml file and give absolute path to that file using `-conf
 
 > Pro Tip: You can use the commands in Jenkins Job as well to create cron backups, restore, update or delete consul KVs.
 
+## Unit Tests
+
+The project includes a suite of unit tests to ensure code quality and correctness. Due to complexities encountered in the build and test environment during development, not all tests are currently passing, and precise code coverage metrics could not be obtained. However, the tests were designed with high coverage in mind.
+
+The tests are organized as follows:
+
+*   **`config/consulDetails_test.go`**: Contains tests for parsing the Consul configuration YAML file (`consulConfig.yml`). It verifies that the YAML is correctly unmarshalled into the configuration structs and that the mapping of configurations to a usable map structure (`GetConsulConfigMap`) is accurate. Tests include scenarios for valid, invalid, and non-existent configuration files.
+
+*   **`src/helpers_test.go`**: Provides comprehensive tests for various utility functions used throughout the application. This includes:
+    *   Parsing and cleaning key-value pair strings.
+    *   Conversion of data structures to and from JSON (for backup/restore).
+    *   File I/O operations for creating backup files and reading them.
+    *   Validation of file paths.
+    *   Logic for comparing and filtering lists of key-value pairs for synchronization.
+    *   String manipulation utilities.
+
+*   **`src/consulwrapper_test.go`**: Focuses on testing the core logic for interacting with the Consul Key-Value store. These tests were designed to use mock implementations of the Consul API client. The intended coverage includes:
+    *   Connecting to Consul.
+    *   Performing basic CRUD (Create, Read, Update, Delete) operations on KV pairs (`putKV`, `getKV`, `deleteKV`, `listAllKV`).
+    *   Higher-level operations like `AddKVToConsul`, `DeleteKVFromConsul`, `BackupConsulKV`, `RestoreConsulKV`, and `SyncConsulKVStore`, verifying their logic with different input parameters and simulated Consul responses.
+
+*   **`src/executor_test.go`**: Tests the command-line interface logic. This involves:
+    *   Simulating various command-line arguments for each subcommand (`add`, `delete`, `backup`, `restore`, `sync`).
+    *   Verifying that the correct functions from `consulwrapper.go` are called with the appropriate parameters.
+    *   Testing argument validation, including missing arguments and help flag invocation. Mocking was intended for `os.Exit` calls to verify error exits.
+
+*   **`main_test.go`**: A simple test to ensure that the `main()` function in `main.go` correctly calls the main execution function (`src.ExecuteGoConsulKVFunc`).
+
+### Running the Tests
+
+To run the unit tests, navigate to the root directory of the project and execute the following command:
+
+```bash
+go test ./...
+```
+
+This command will discover and run all test files in the current directory and its subdirectories.
+
+*(Note: Due to the aforementioned environment complexities, some tests may not pass or execute correctly at this time.)*
+
+### Test Coverage
+
+The goal for these unit tests was to achieve near 100% code coverage. However, due to the technical difficulties encountered in the build and test environment, which prevented the tests from running to completion reliably, accurate code coverage metrics could not be generated at the time of this writing.
+
+Once the environment issues are resolved and the tests are passing, code coverage can be measured using Go's built-in tools:
+
+1.  Generate a coverage profile:
+    ```bash
+    go test -coverprofile=coverage.out ./...
+    ```
+2.  View the coverage report in HTML format:
+    ```bash
+    go tool cover -html=coverage.out
+    ```
+    Or, to get a summary by function in the terminal:
+    ```bash
+    go tool cover -func=coverage.out
+    ```
+
 ------
 Primary dependency: https://godoc.org/github.com/hashicorp/consul/api

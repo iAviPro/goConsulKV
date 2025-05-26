@@ -12,6 +12,9 @@ import (
 	"os"
 )
 
+// ExecuteGoConsulKVFunc can be reassigned in tests to mock ExecuteGoConsulKV.
+var ExecuteGoConsulKVFunc = ExecuteGoConsulKV
+
 // ExecuteGoConsulKV : Driver code for goConsulKV
 func ExecuteGoConsulKV() {
 	var sn, cn, props, config, replace, fp, source, target string
