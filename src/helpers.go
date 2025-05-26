@@ -13,8 +13,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ConsulScale/config" // Corrected import path
 	"github.com/hashicorp/consul/api"
-	"github.com/iAviPro/goConsulKV/config"
 )
 
 // KVDetails : Struct to marshal backup KV pair json
@@ -55,9 +55,14 @@ func createKVPairs(props, sName string) []api.KVPair {
 }
 
 // kvPairsToJSON : Convert KVPairs to json
-func kvPairsToJSON(kvPairs *api.KVPairs, cn, fp string) []byte {
+func kvPairsToJSON(kvPairs api.KVPairs) ([]byte, error) { // Changed signature: *api.KVPairs -> api.KVPairs, added error return
 	var jsonbackup []*KVDetails
-	for _, kv := range *kvPairs {
+	// Handle nil kvPairs explicitly if necessary, though ranging over nil slice is safe (0 iterations)
+	if kvPairs == nil {
+		// Return null or empty array based on desired JSON representation for nil input
+		return json.Marshal(nil) // Or json.Marshal([]KVDetails{}) for "[]"
+	}
+	for _, kv := range kvPairs { // Range over api.KVPairs directly
 		// skip folder creation in consul as its autocreated.
 		if kv.Key[len(kv.Key)-1:] == "/" {
 			continue
@@ -66,7 +71,7 @@ func kvPairsToJSON(kvPairs *api.KVPairs, cn, fp string) []byte {
 		} else {
 			kvDetails := KVDetails{
 				Key:   kv.Key,
-				Value: kv.Value,
+				Value: kv.Value, // Value is []byte, matches struct
 				Flags: kv.Flags,
 			}
 			jsonbackup = append(jsonbackup, &kvDetails)
@@ -74,25 +79,70 @@ func kvPairsToJSON(kvPairs *api.KVPairs, cn, fp string) []byte {
 	}
 	b, err := json.MarshalIndent(jsonbackup, "", "    ")
 	if err != nil {
-		fmt.Println("error:", err)
+		// fmt.Println("error:", err) // Avoid printing directly in library functions
+		return nil, err // Propagate error
 	}
-	fmt.Println(string(b))
-	return b
+	// fmt.Println(string(b)) // Avoid printing directly
+	return b, nil
 }
 
 // createBackupFileAndWriteData write file with backup data
-func createBackupFileAndWriteData(fp, cn string, data []byte) error {
-	filepath := fp + "/" + cn + ".json"
-	os.MkdirAll(fp, os.ModePerm)
+// fp is the base directory path, cn is the consul name (used as part of filename)
+func createBackupFileAndWriteData(fp string, cn string, data []byte) (string, error) { // Added string return for filepath
+	// Ensure the base directory path exists
+	if err := os.MkdirAll(fp, os.ModePerm); err != nil {
+		return "", fmt.Errorf("failed to create backup directory %s: %w", fp, err)
+	}
+	filepath := fp + "/" + cn + ".json" // Original logic for joining path
 	err := ioutil.WriteFile(filepath, data, 0644)
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return "", fmt.Errorf("failed to write backup file %s: %w", filepath, err)
 	}
-	return nil
+	return filepath, nil // Return the path of the created file and nil error
 }
 
+// CreateConsulDetailsFunc points to the original CreateConsulDetails function.
+// Tests can override this variable to mock the behavior of CreateConsulDetails.
+var CreateConsulDetailsFunc = CreateConsulDetails // Already done
+
+// CreateKVPairsFunc points to the original createKVPairs function.
+var CreateKVPairsFunc = createKVPairs
+
+// IsConfigNameValidFunc points to the original isConfigNameValid function.
+var IsConfigNameValidFunc = isConfigNameValid
+
+// ErrConsulConnectionFunc points to the original errConsulConnection function.
+var ErrConsulConnectionFunc = errConsulConnection
+
+// ValidateFilePathFunc points to the original ValidateFilePath function.
+var ValidateFilePathFunc = ValidateFilePath
+
+// ReadJSONFileAndReturnStructFunc points to the original readJSONFileAndReturnStruct function.
+var ReadJSONFileAndReturnStructFunc = readJSONFileAndReturnStruct
+
+// ConvertJSONStructToKvPairsFunc points to the original convertJSONStructToKvPairs function.
+var ConvertJSONStructToKvPairsFunc = convertJSONStructToKvPairs
+
+// KVPairsToJSONFunc points to the original kvPairsToJSON function.
+var KVPairsToJSONFunc = kvPairsToJSON // Already done by implication
+
+// CreateBackupFileAndWriteDataFunc points to the original createBackupFileAndWriteData function.
+var CreateBackupFileAndWriteDataFunc = createBackupFileAndWriteData // Already done by implication
+
+// RemoveExistingKVPairsFunc points to the original removeExistingKVPairs function.
+var RemoveExistingKVPairsFunc = removeExistingKVPairs
+
+// ConvertServiceKVPairsToMapFunc points to the original convertServiceKVPairsToMap function.
+var ConvertServiceKVPairsToMapFunc func(kvPairs *api.KVPairs, bp string) map[string][]byte = convertServiceKVPairsToMap
+
+// RemoveExistingKVPairsFunc points to the original removeExistingKVPairs function.
+var RemoveExistingKVPairsFunc func(sourceKvPairs, targetKvPairs *api.KVPairs, sbf, tbf string) map[string][]byte = removeExistingKVPairs
+
+// ExitFunc can be reassigned in tests to mock os.Exit.
+var ExitFunc = os.Exit
+
 // CreateConsulDetails : Read console params and yml file to generate console details
-func CreateConsulDetails(cfp string) map[string]config.ConsulDetail {
+func CreateConsulDetails(cfp string) (map[string]config.ConsulDetail, error) { // Added error return
 	var parseFile string
 	if cfp == "" {
 		parseFile = config.DefaultPathToEnvConfigFile
@@ -101,19 +151,21 @@ func CreateConsulDetails(cfp string) map[string]config.ConsulDetail {
 			parseFile = config.DefaultPathToEnvConfigFile
 			fmt.Printf("\nError in config file path: %s \n", cfp)
 			fmt.Println(er)
-			os.Exit(1)
+			// os.Exit(1) // Replaced os.Exit with error return
+			return nil, fmt.Errorf("error in config file path %s: %w", cfp, er)
 		} else {
 			parseFile = cfp
 		}
 	}
 	allConfigs, err := config.ParseConfigFile(parseFile)
 	if err != nil {
-		fmt.Printf("\nError in reading config yml file on path: %s \n", cfp)
+		fmt.Printf("\nError in reading config yml file on path: %s \n", parseFile) // Use parseFile here
 		fmt.Println(err)
-		os.Exit(1)
+		// os.Exit(1) // Replaced os.Exit with error return
+		return nil, fmt.Errorf("error reading config yml file on path %s: %w", parseFile, err)
 	}
 	confMap := config.GetConsulConfigMap(allConfigs)
-	return confMap
+	return confMap, nil // Return map and nil error
 }
 
 // ValidateFilePath : Validates if the path provide is a file
@@ -148,9 +200,12 @@ func convertJSONStructToKvPairs(kvDetails *[]KVDetails) *[]api.KVPair {
 }
 
 // convertServiceKVPairsToMap : key = only service path (removing the base path) and value is the KV value.
-func convertServiceKVPairsToMap(kvPairs *api.KVPairs, bp string) map[string][]byte {
+func convertServiceKVPairsToMap(kvPairs *api.KVPairs, bp string) map[string][]byte { // Changed to *api.KVPairs
 	var kvMap = make(map[string][]byte)
-	for _, kv := range *kvPairs {
+	if kvPairs == nil {
+		return kvMap
+	}
+	for _, kv := range *kvPairs { // Dereference kvPairs
 		// remove folders or keys with nil Kv Values
 		if kv.Key[len(kv.Key)-1:] == "/" {
 			continue
@@ -169,11 +224,14 @@ func convertServiceKVPairsToMap(kvPairs *api.KVPairs, bp string) map[string][]by
 }
 
 // removeExistingKVPairs : find keys of source that do not exists in target and return those kvPairs
-func removeExistingKVPairs(sourceKvPairs, targetKvPairs *api.KVPairs, sbf, tbf string) map[string][]byte {
-	targetKvMap := convertServiceKVPairsToMap(targetKvPairs, tbf)
+func removeExistingKVPairs(sourceKvPairs, targetKvPairs *api.KVPairs, sbf, tbf string) map[string][]byte { // Changed to *api.KVPairs
+	targetKvMap := ConvertServiceKVPairsToMapFunc(targetKvPairs, tbf) // Use Func for internal call consistency
 	var res = make(map[string][]byte)
 
-	for _, sourceKv := range *sourceKvPairs {
+	if sourceKvPairs == nil {
+		return res
+	}
+	for _, sourceKv := range *sourceKvPairs { // Dereference sourceKvPairs
 		if sourceKv.Key[len(sourceKv.Key)-1:] == "/" {
 			continue
 		} else if sourceKv.Value == nil {
@@ -206,7 +264,7 @@ func errConsulConnection(name string, er error, exit bool) {
 		fmt.Println(" <> -- Could Not Connect To Consul Server: ", name, " -- <>")
 		fmt.Println(er)
 		if exit {
-			os.Exit(1)
+			ExitFunc(1) // Use exported ExitFunc
 		}
 	} else {
 		fmt.Printf("\n -- Successfully Connected To Consul Server: %s -- \n", name)
